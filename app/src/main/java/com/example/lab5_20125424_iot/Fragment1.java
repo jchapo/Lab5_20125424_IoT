@@ -189,9 +189,9 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
     public void pedirPermisos() {
         // TIRAMISU = 33
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED) {
+                ActivityCompat.checkSelfPermission(getContext(), POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED) {
 
-            ActivityCompat.requestPermissions(this, new String[]{POST_NOTIFICATIONS}, 101);
+            ActivityCompat.requestPermissions(getActivity(), new String[]{POST_NOTIFICATIONS}, 101);
         }
     }
 }
