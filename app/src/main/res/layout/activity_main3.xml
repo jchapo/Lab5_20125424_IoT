@@ -21,11 +21,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:navigationIcon="@drawable/ic_back_outline_black"
-        app:titleTextColor="@color/white"
+            app:titleTextColor="@color/white"
             android:background="?attr/colorPrimary"
             app:title="Agregar tarea"
             app:layout_constraintEnd_toEndOf="parent"
-            app:menu="@menu/top_app_bar_new"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
     </com.google.android.material.appbar.AppBarLayout>
@@ -107,6 +106,34 @@
                 android:layout_marginTop="16dp">
 
                 <ImageView
+                    android:id="@+id/iconFecha"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_event_outline"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="8dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1">
+
+                    <EditText
+                        android:id="@+id/editFecha"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Fecha"
+                        android:focusable="false"
+                        android:clickable="true" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp">
+                <ImageView
                     android:id="@+id/iconRecordatorio"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -119,16 +146,14 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/editRecordatorio"
+                    <EditText
+                        android:id="@+id/editHora"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="none"
-                        android:hint="Recordatorio"
+                        android:hint="Hora"
                         android:focusable="false"
                         android:clickable="true" />
                 </com.google.android.material.textfield.TextInputLayout>
-
 
             </LinearLayout>
             <LinearLayout

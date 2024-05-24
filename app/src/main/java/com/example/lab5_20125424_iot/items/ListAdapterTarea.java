@@ -37,7 +37,7 @@ public class ListAdapterTarea extends RecyclerView.Adapter<ListAdapterTarea.View
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = nInflater.inflate(R.layout.list_tareas, parent, false);
+        View view = nInflater.inflate(R.layout.tarea, parent, false);
         return new ViewHolder(view);
     }
 
@@ -58,18 +58,18 @@ public class ListAdapterTarea extends RecyclerView.Adapter<ListAdapterTarea.View
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tarea, descripcion, fecha, hora;
+        TextView titulo, descripcion, fecha, hora;
 
         ViewHolder(View itemView) {
             super(itemView);
-            tarea = itemView.findViewById(R.id.textviewTitulo);
+            titulo = itemView.findViewById(R.id.textviewTitulo);
             descripcion = itemView.findViewById(R.id.textviewDescripcion);
             fecha = itemView.findViewById(R.id.textviewFecha);
             hora = itemView.findViewById(R.id.textviewHora);
         }
 
         void bindData(final ListElementTarea item) {
-            tarea.setText(item.getTarea());
+            titulo.setText(item.getTitulo());
             fecha.setText(item.getFecha());
             hora.setText(item.getHora());
             itemView.setOnClickListener(new View.OnClickListener() {
