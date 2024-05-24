@@ -44,11 +44,14 @@ public class MainActivity3 extends AppCompatActivity {
     private EditText editTitulo, editDescripcion, editFecha, editHora;
     private MaterialAutoCompleteTextView selectImportancia;
     ArrayAdapter<String> importanciaAdapter;
+    private boolean isEditing = false; // Indicador para editar o crear nuevo usuario
+
     String[] importanciaOptions = {"Alta", "Media", "Baja"};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
+        isEditing = getIntent().getBooleanExtra("isEditing", false);
 
         selectImportancia = findViewById(R.id.selectImportancia);
         importanciaAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, importanciaOptions);
@@ -60,7 +63,20 @@ public class MainActivity3 extends AppCompatActivity {
         editHora = findViewById(R.id.editHora);
 
         MaterialToolbar topAppBar = findViewById(R.id.topAppBarAgregarTarea);
-        topAppBar.inflateMenu(R.menu.top_app_bar_new);
+        if (isEditing) {
+            topAppBar.inflateMenu(R.menu.top_app_bar_edit);
+        } else {
+            topAppBar.inflateMenu(R.menu.top_app_bar_new);
+        }
+        Intent intent = getIntent();
+        if (intent.hasExtra("ListElement")) {
+            ListElementTarea element = (ListElementTarea) intent.getSerializableExtra("ListElement");
+            isEditing = true;
+            fillFields(element);
+            topAppBar.setTitle("Editar Tarea");
+        } else {
+            topAppBar.setTitle("Nueva Tarea");
+        }
 
         topAppBar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.createNewTopAppBar) {
@@ -77,12 +93,12 @@ public class MainActivity3 extends AppCompatActivity {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                     String fechaCreacion = fechaActual.format(formatter);
 
-                    ListElementTarea listElement = new ListElementTarea(titulo, descripcion, fecha, hora, importancia,status,fechaCreacion);
-
-                    //Intent intent2 = new Intent(MainActivity3.this, MainActivity2.class);
-                    //intent2.putExtra("ListElement", listElement);
-                    //notificarImportanceDefault(fullName, fechaCreacion);
-                    //startActivity(intent2);
+                    ListElementTarea listElement = new ListElementTarea(titulo, descripcion, fecha, hora, importancia, status, fechaCreacion);
+                    actualizarArchivoTextoJson(this, listElement);
+                    String toastMessage = "Tarea creada";
+                    Toast.makeText(MainActivity3.this, toastMessage, Toast.LENGTH_SHORT).show();
+                    Intent intent2 = new Intent(MainActivity3.this, MainActivity2.class);
+                    startActivity(intent2);
                 }
                 return true;
             } else if (item.getItemId() == R.id.saveOldTopAppBar) {
@@ -99,70 +115,90 @@ public class MainActivity3 extends AppCompatActivity {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                     String fechaCreacion = fechaActual.format(formatter);
 
-                    ListElementTarea listElement = new ListElementTarea(titulo, descripcion, fecha, hora, importancia,status,fechaCreacion);
-
-
-                   /* Intent intent3 = new Intent(MainActivity3.this, MainActivity2.class);
-                    intent3.putExtra("ListElement", listElement);
-                    startActivity(intent3);*/
+                    ListElementTarea element = (ListElementTarea) getIntent().getSerializableExtra("ListElement");
+                    element.setTitulo(titulo);
+                    element.setDescripcion(descripcion);
+                    element.setFecha(fecha);
+                    element.setHora(hora);
+                    element.setImportancia(importancia);
+                    actualizarArchivoTextoJson(this, element);
+                    String toastMessage = "Tarea actualizada";
+                    Toast.makeText(MainActivity3.this, toastMessage, Toast.LENGTH_SHORT).show();
+                    Intent intent3 = new Intent(MainActivity3.this, MainActivity2.class);
+                    startActivity(intent3);
                 }
                 return true;
-            } else{
+            } else {
                 return false;
             }
         });
-        topAppBar.setNavigationOnClickListener(v -> {
-            finish();
+
+        topAppBar.setNavigationOnClickListener(v -> finish());
+
+        editFecha.setOnClickListener(v -> {
+            hideKeyboard(v);
+
+            final Calendar calendario = Calendar.getInstance();
+            int año = calendario.get(Calendar.YEAR);
+            int mes = calendario.get(Calendar.MONTH);
+            int dia = calendario.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog datePickerDialog = new DatePickerDialog(MainActivity3.this,
+                    (view, year, monthOfYear, dayOfMonth) -> {
+                        String fechaSeleccionada = dayOfMonth + "/" + (monthOfYear + 1) + "/" + year;
+                        editFecha.setText(fechaSeleccionada);
+                        verificarFechaYHora();
+                    }, año, mes, dia);
+            datePickerDialog.show();
         });
-        editFecha.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hideKeyboard(v);
 
-                // Obtener la fecha actual
-                final Calendar calendario = Calendar.getInstance();
-                int año = calendario.get(Calendar.YEAR);
-                int mes = calendario.get(Calendar.MONTH);
-                int dia = calendario.get(Calendar.DAY_OF_MONTH);
+        editHora.setOnClickListener(v -> {
+            hideKeyboard(v);
 
-                // Mostrar el DatePickerDialog
-                DatePickerDialog datePickerDialog = new DatePickerDialog(MainActivity3.this,
-                        (view, year, monthOfYear, dayOfMonth) -> {
-                            // Aquí puedes manejar la fecha seleccionada
-                            String fechaSeleccionada = dayOfMonth + "/" + (monthOfYear + 1) + "/" + year;
-                            editFecha.setText(fechaSeleccionada);
-                        }, año, mes, dia);
-                datePickerDialog.show();
+            final Calendar calendario = Calendar.getInstance();
+            int hora = calendario.get(Calendar.HOUR_OF_DAY);
+            int minuto = calendario.get(Calendar.MINUTE);
+
+            TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity3.this,
+                    (view, hourOfDay, minute) -> {
+                        String horaSeleccionada = String.format("%02d:%02d", hourOfDay, minute);
+                        editHora.setText(horaSeleccionada);
+                        verificarFechaYHora();
+                    }, hora, minuto, true);
+            timePickerDialog.show();
+        });
+    }
+
+    private void verificarFechaYHora() {
+        String fechaSeleccionada = editFecha.getText().toString();
+        String horaSeleccionada = editHora.getText().toString();
+
+        if (!fechaSeleccionada.isEmpty() && !horaSeleccionada.isEmpty()) {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("d/M/yyyy");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+            LocalDate fechaActual = LocalDate.now();
+            Calendar ahora = Calendar.getInstance();
+            int horaActual = ahora.get(Calendar.HOUR_OF_DAY);
+
+            LocalDate fechaSeleccionadaDate = LocalDate.parse(fechaSeleccionada, dateFormatter);
+            int horaSeleccionadaInt = Integer.parseInt(horaSeleccionada.split(":")[0]);
+
+            if (fechaSeleccionadaDate.equals(fechaActual) && horaSeleccionadaInt <= (horaActual + 3)) {
+                selectImportancia.setText("Alta");
+                selectImportancia.setEnabled(false);
+                Toast.makeText(this, "Tarea de pioridad ALTA.", Toast.LENGTH_SHORT).show();
+            } else {
+                selectImportancia.setEnabled(true);
             }
-        });
-
-        EditText editHora = findViewById(R.id.editHora);
-        editHora.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hideKeyboard(v);
-
-                // Obtener la hora actual
-                final Calendar calendario = Calendar.getInstance();
-                int hora = calendario.get(Calendar.HOUR_OF_DAY);
-                int minuto = calendario.get(Calendar.MINUTE);
-
-                // Mostrar el TimePickerDialog
-                TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity3.this,
-                        (view, hourOfDay, minute) -> {
-                            // Aquí puedes manejar la hora seleccionada
-                            String horaSeleccionada = String.format("%02d:%02d", hourOfDay, minute);
-                            editHora.setText(horaSeleccionada);
-                        }, hora, minuto, true);
-                timePickerDialog.show();
-            }
-        });
+        }
     }
 
     private void hideKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
+
     private boolean areFieldsEmpty() {
         return selectImportancia.getText().toString().isEmpty() ||
                 editTitulo.getText().toString().isEmpty() ||
@@ -183,6 +219,8 @@ public class MainActivity3 extends AppCompatActivity {
             while ((line = bufferedReader.readLine()) != null) {
                 jsonDataBuilder.append(line);
             }
+            Log.d("msg-test-guardarArchivoTextoComoJson", "Archivo para actualizar");
+
             String jsonData = jsonDataBuilder.toString();
 
             Gson gson = new Gson();
@@ -200,12 +238,41 @@ public class MainActivity3 extends AppCompatActivity {
 
                 Log.d("msg-test-guardarArchivoTextoComoJson", "Archivo guardado correctamente");
             } catch (IOException e) {
+                Log.d("msg-test-guardarArchivoTextoComoJson", "Archivo no guardado correctamente");
                 e.printStackTrace();
             }
 
         } catch (IOException e) {
+            Log.d("msg-test-guardarArchivoTextoComoJson", "Archivo nuevo");
             e.printStackTrace();
+            List<ListElementTarea> nuevaListaTareas = new ArrayList<>();
+            nuevaListaTareas.add(listElement);
+
+            try (FileOutputStream fileOutputStream = context.openFileOutput(fileName, Context.MODE_PRIVATE);
+                 OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+                 BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
+                Gson gson = new Gson();
+                String nuevaJsonData = gson.toJson(nuevaListaTareas.toArray(new ListElementTarea[0]));
+                bufferedWriter.write(nuevaJsonData);
+                Log.d("msg-test-guardarArchivoTextoComoJson", "Archivo guardado correctamente");
+            } catch (IOException er) {
+                Log.d("msg-test-guardarArchivoTextoComoJson", "Archivo no guardado correctamente");
+                e.printStackTrace();
+            }
         }
     }
+
+    private void fillFields(ListElementTarea element) {
+        editTitulo.setText(element.getTitulo());
+        editDescripcion.setText(element.getDescripcion());
+        editFecha.setText(element.getFecha());
+        editHora.setText(element.getHora());
+        int index = Arrays.asList(importanciaOptions).indexOf(element.getImportancia());
+        if (index != -1) {
+            selectImportancia.setText(importanciaOptions[index], false);
+        }
+        verificarFechaYHora();
+    }
+
 
 }

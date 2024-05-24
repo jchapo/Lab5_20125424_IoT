@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -59,6 +60,7 @@ public class ListAdapterTarea extends RecyclerView.Adapter<ListAdapterTarea.View
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView titulo, descripcion, fecha, hora;
+        Button btnAccion1;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -66,15 +68,26 @@ public class ListAdapterTarea extends RecyclerView.Adapter<ListAdapterTarea.View
             descripcion = itemView.findViewById(R.id.textviewDescripcion);
             fecha = itemView.findViewById(R.id.textviewFecha);
             hora = itemView.findViewById(R.id.textviewHora);
+            btnAccion1 = itemView.findViewById(R.id.btnAccion1);
+
         }
 
         void bindData(final ListElementTarea item) {
             titulo.setText(item.getTitulo());
+            descripcion.setText(item.getDescripcion());
             fecha.setText(item.getFecha());
             hora.setText(item.getHora());
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+                    listener.onItemClick(item);
+                }
+            });
+            // Configurar clic del primer botón
+            btnAccion1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Aquí se llama al método onItemClick del listener pasando el elemento correspondiente
                     listener.onItemClick(item);
                 }
             });

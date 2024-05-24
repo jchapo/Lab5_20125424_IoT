@@ -13,6 +13,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -45,6 +48,8 @@ public class MainActivity2 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         navigationActivityViewModel = new ViewModelProvider(this).get(NavigationActivityViewModel.class);
+
+
         FloatingActionButton agregarUsuarioButton = findViewById(R.id.agregarTarea);
         agregarUsuarioButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,9 +80,22 @@ public class MainActivity2 extends AppCompatActivity {
             listaTareas.addAll(Arrays.asList(listaTareasArray));
 
         } catch (IOException e) {
+            Log.d("msg-test-abrirArchivoTextoComoJson", "No se pudo leer el archivo");
             e.printStackTrace();
         }
         navigationActivityViewModel.getListaTareas().setValue(new ArrayList<>(listaTareas));
+        replaceFragment(new Fragment1());
 
     }
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frameListaTareas, fragment);
+        fragmentTransaction.commit();
+    }
+    protected void onResume() {
+        super.onResume();
+        replaceFragment(new Fragment1());
+    }
+
 }

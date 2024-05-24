@@ -22,7 +22,7 @@ import com.example.lab5_20125424_iot.viewModels.NavigationActivityViewModel;
 
 import java.util.ArrayList;
 
-public class Fragment1 extends Fragment {
+public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickListener{
     private ArrayList<ListElementTarea> listaTarea;
     private ListAdapterTarea listAdapterTarea;
     private RecyclerView recyclerView;
@@ -36,6 +36,8 @@ public class Fragment1 extends Fragment {
         View view = inflater.inflate(R.layout.fragment_fragment1, container, false);
         navigationActivityViewModel = new ViewModelProvider(requireActivity()) .get(NavigationActivityViewModel. class);
         init(view);
+        ListAdapterTarea adapter = new ListAdapterTarea(listaTarea, getContext(), this);
+        recyclerView.setAdapter(adapter);
         return view;
     }
     public void init(View view) {
@@ -52,15 +54,26 @@ public class Fragment1 extends Fragment {
         }
 
         listAdapterTarea = new ListAdapterTarea(listaTarea, getContext(), item -> moveToDescription(item));
-        recyclerView = view.findViewById(R.id.listAdapterTarea);
+        recyclerView = view.findViewById(R.id.listElementsTareas);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(listAdapterTarea);
     }
 
-    public void moveToDescription(ListAdapterTarea item) {
-        Intent intent = new Intent(getContext(), MainActivity_1_Users_UserDetais.class);
+    public void moveToDescription(ListElementTarea item) {
+        Intent intent = new Intent(getContext(), MainActivity4.class);
         intent.putExtra("ListElement", item);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onItemClick(ListElementTarea item) {
+        // Abre la vista de edición (MainActivity3) y pasa los datos del elemento seleccionado
+        Intent intent = new Intent(getActivity(), MainActivity3.class);
+        intent.putExtra("isEditing", true);
+        intent.putExtra("ListElement", item);
+        // Puedes pasar los datos del elemento seleccionado al intent utilizando putExtra
+        // Por ejemplo: intent.putExtra("ELEMENTO_SELECCIONADO", item);
         startActivity(intent);
     }
 }

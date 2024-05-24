@@ -36,25 +36,65 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="8dp"
                     android:layout_height="wrap_content">
 
                     <TextView
                         android:id="@+id/textviewTitulo"
                         android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:textStyle="bold"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:gravity="start|center_vertical"
                         android:text="Tarea"
-                        android:textAppearance="?attr/textAppearanceTitleMedium"/>
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textSize="25dp"
+                        android:textStyle="bold" />
 
-                    <ImageView
-                        android:id="@+id/iconImageView"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="end|center_vertical"
-                        app:srcCompat="@drawable/ic_notification_outline_black" />
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:paddingEnd="16dp"
+                            android:gravity="end|center_vertical"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/textviewFecha"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="end|center_vertical"
+                                android:text="Fecha"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?android:attr/textColorSecondary"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/textviewHora"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="end|center_vertical"
+                                android:text="Hora"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?android:attr/textColorSecondary"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/iconImageView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end|center_vertical"
+                            android:textSize="25dp"
+                            android:tint="@android:color/holo_orange_light"
+                            app:srcCompat="@drawable/ic_notification_filled" />
+                    </LinearLayout>
+
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -76,34 +116,6 @@
 
 
                 </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:orientation="horizontal"
-                    android:layout_height="wrap_content">
-
-                    <TextView
-                        android:id="@+id/textviewHora"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_marginTop="8dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="start|center_vertical"
-                        android:text="Hora"
-                        android:textStyle="bold"
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:textColor="?android:attr/textColorSecondary"/>
-
-                    <TextView
-                        android:id="@+id/textviewFecha"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_marginTop="8dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="end|center_vertical"
-                        android:text="Fecha"
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:textColor="?android:attr/textColorSecondary"/>
-                </LinearLayout>
 
             </LinearLayout>
 
@@ -114,16 +126,18 @@
                 android:orientation="horizontal"
                 android:layout_gravity="right">
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccion1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="Acción_1"
+                    android:text="Editar"
                     style="?attr/borderlessButtonStyle"
                     />
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccion2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Acción_2"
+                    android:text="Realizada"
                     style="?attr/borderlessButtonStyle"
                     />
             </LinearLayout>
