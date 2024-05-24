@@ -10,7 +10,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.example.lab5_20125424_iot.R;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ public class ListAdapterTarea extends RecyclerView.Adapter<ListAdapterTarea.View
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
-        void onItemClick(ListElementTarea item);
+        void onItemClick(ListElementTarea item, int actionId);
     }
 
     public ListAdapterTarea(List<ListElementTarea> itemList, Context context, OnItemClickListener listener) {
@@ -60,7 +59,7 @@ public class ListAdapterTarea extends RecyclerView.Adapter<ListAdapterTarea.View
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView titulo, descripcion, fecha, hora;
-        Button btnAccion1;
+        Button btnAccion1, btnAccion2;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -69,7 +68,7 @@ public class ListAdapterTarea extends RecyclerView.Adapter<ListAdapterTarea.View
             fecha = itemView.findViewById(R.id.textviewFecha);
             hora = itemView.findViewById(R.id.textviewHora);
             btnAccion1 = itemView.findViewById(R.id.btnAccion1);
-
+            btnAccion2 = itemView.findViewById(R.id.btnAccion2); // Asumiendo que este es el ID del segundo botón
         }
 
         void bindData(final ListElementTarea item) {
@@ -80,15 +79,19 @@ public class ListAdapterTarea extends RecyclerView.Adapter<ListAdapterTarea.View
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    listener.onItemClick(item);
+                    listener.onItemClick(item, R.id.item_view);
                 }
             });
-            // Configurar clic del primer botón
             btnAccion1.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // Aquí se llama al método onItemClick del listener pasando el elemento correspondiente
-                    listener.onItemClick(item);
+                    listener.onItemClick(item, R.id.btnAccion1);
+                }
+            });
+            btnAccion2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    listener.onItemClick(item, R.id.btnAccion2);
                 }
             });
         }

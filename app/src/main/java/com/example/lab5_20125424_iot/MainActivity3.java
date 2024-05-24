@@ -1,9 +1,17 @@
 package com.example.lab5_20125424_iot;
 
+import static android.Manifest.permission.POST_NOTIFICATIONS;
+
 import android.app.DatePickerDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +22,9 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.example.lab5_20125424_iot.entity.Tarea;
 import com.example.lab5_20125424_iot.entity.TareaDto;
@@ -40,6 +51,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity3 extends AppCompatActivity {
+    String canal1 = "important";
     ListElementTarea element;
     private EditText editTitulo, editDescripcion, editFecha, editHora;
     private MaterialAutoCompleteTextView selectImportancia;
@@ -51,6 +63,7 @@ public class MainActivity3 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main3);
+        crearCanalesNotificacion();
         isEditing = getIntent().getBooleanExtra("isEditing", false);
 
         selectImportancia = findViewById(R.id.selectImportancia);
@@ -98,6 +111,7 @@ public class MainActivity3 extends AppCompatActivity {
                     String toastMessage = "Tarea creada";
                     Toast.makeText(MainActivity3.this, toastMessage, Toast.LENGTH_SHORT).show();
                     Intent intent2 = new Intent(MainActivity3.this, MainActivity2.class);
+                    notificarImportanceDefault(titulo, importancia);
                     startActivity(intent2);
                 }
                 return true;
@@ -257,7 +271,7 @@ public class MainActivity3 extends AppCompatActivity {
                 Log.d("msg-test-guardarArchivoTextoComoJson", "Archivo guardado correctamente");
             } catch (IOException er) {
                 Log.d("msg-test-guardarArchivoTextoComoJson", "Archivo no guardado correctamente");
-                e.printStackTrace();
+                er.printStackTrace();
             }
         }
     }
@@ -273,6 +287,60 @@ public class MainActivity3 extends AppCompatActivity {
         }
         verificarFechaYHora();
     }
+    public void crearCanalesNotificacion() {
 
+        NotificationChannel channel = new NotificationChannel(canal1,
+                "Canal Users Creation",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription("Canal para notificaciones de creación de perfiles de usuario con prioridad default");
+        channel.enableVibration(true);
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+
+        pedirPermisos();
+    }
+
+    public void pedirPermisos() {
+        // TIRAMISU = 33
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED) {
+
+            ActivityCompat.requestPermissions(this, new String[]{POST_NOTIFICATIONS}, 101);
+        }
+    }
+    public void notificarImportanceDefault(String titulo, String importancia){
+
+        //Crear notificación
+        //Agregar información a la notificación que luego sea enviada a la actividad que se abre
+        Intent intent = new Intent(this, MainActivity2.class);
+        intent.putExtra("pid",4616);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, canal1)
+                .setSmallIcon(R.drawable.ic_notification_outline_black)
+                .setContentTitle("Nueva tarea")
+                .setContentText("Título: " + titulo + "\nPrioridad: " + importancia)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true);
+
+        if (importancia.equals("Alta")) {
+            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+        } else if (importancia.equals("Media")) {
+            builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        } else if (importancia.equals("Baja")) {
+            builder.setPriority(NotificationCompat.PRIORITY_LOW);
+        } else {
+            builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        }
+
+        Notification notification = builder.build();
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+
+        if (ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(1, notification);
+        }
+
+    }
 
 }
