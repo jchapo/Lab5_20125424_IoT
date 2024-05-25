@@ -1,7 +1,15 @@
 package com.example.lab5_20125424_iot;
 
+import static android.Manifest.permission.POST_NOTIFICATIONS;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,12 +18,16 @@ import android.view.ViewGroup;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -40,15 +52,23 @@ import java.util.List;
 
 public class MainActivity2 extends AppCompatActivity {
     ArrayList<Tarea> listaTareas;
+    String nombreUsuario;
+    String fileName;
     NavigationActivityViewModel navigationActivityViewModel;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         navigationActivityViewModel = new ViewModelProvider(this).get(NavigationActivityViewModel.class);
-
+        navigationActivityViewModel.getNombreUsuario().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String nombreUsuario) {
+                if (nombreUsuario != null) {
+                    fileName = nombreUsuario + "_listaTareasJson";
+                }
+            }
+        });
 
         FloatingActionButton agregarUsuarioButton = findViewById(R.id.agregarTarea);
         agregarUsuarioButton.setOnClickListener(new View.OnClickListener() {
@@ -60,7 +80,6 @@ public class MainActivity2 extends AppCompatActivity {
             }
         });
         List<ListElementTarea> listaTareas = new ArrayList<>();
-        String fileName = "listaTareasJson";
 
         try (FileInputStream fileInputStream = this.openFileInput(fileName);
              InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
@@ -80,9 +99,29 @@ public class MainActivity2 extends AppCompatActivity {
             listaTareas.addAll(Arrays.asList(listaTareasArray));
 
         } catch (IOException e) {
-            Log.d("msg-test-abrirArchivoTextoComoJson", "No se pudo leer el archivo");
+            // Si no se encuentra el archivo, crea uno nuevo con formato vacío
+            Log.d("msg-test-abrirArchivoTextoComoJson", "No se pudo leer el archivo, se creará uno nuevo");
             e.printStackTrace();
+
+            // Aquí se crea una nueva lista vacía de tareas
+            List<ListElementTarea> listaTareas2 = new ArrayList<>();
+
+            // Se convierte la lista vacía a JSON
+            Gson gson = new Gson();
+            String nuevaJsonData = gson.toJson(listaTareas2.toArray(new ListElementTarea[0]));
+
+            // Se guarda la lista vacía en el archivo
+            try (FileOutputStream fileOutputStream = this.openFileOutput(fileName, Context.MODE_PRIVATE);
+                 OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+                 BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
+                bufferedWriter.write(nuevaJsonData);
+                Log.d("msg-test-crearArchivoTextoComoJson", "Archivo creado correctamente");
+            } catch (IOException ex) {
+                Log.d("msg-test-crearArchivoTextoComoJson", "Error al crear el archivo");
+                ex.printStackTrace();
+            }
         }
+
         navigationActivityViewModel.getListaTareas().setValue(new ArrayList<>(listaTareas));
         replaceFragment(new Fragment1());
 

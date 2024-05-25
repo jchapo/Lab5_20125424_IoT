@@ -7,6 +7,7 @@ import static androidx.core.content.ContextCompat.getSystemService;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.app.Notification;
@@ -46,6 +47,7 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickListener{
 
@@ -53,6 +55,8 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
     private ListAdapterTarea listAdapterTarea;
     private RecyclerView recyclerView;
     NavigationActivityViewModel navigationActivityViewModel;
+    String nombreUsuario;
+    String fileName;
 
 
     @Override
@@ -61,7 +65,16 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_fragment1, container, false);
         navigationActivityViewModel = new ViewModelProvider(requireActivity()) .get(NavigationActivityViewModel. class);
+        navigationActivityViewModel.getNombreUsuario().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(String nombreUsuario) {
+                if (nombreUsuario != null) {
+                    fileName = nombreUsuario + "_listaTareasJson";
+                }
+            }
+        });
         init(view);
+
         ListAdapterTarea adapter = new ListAdapterTarea(listaTarea, getContext(), this);
         recyclerView.setAdapter(adapter);
         return view;
@@ -76,23 +89,19 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
 
         if (navigationActivityViewModel != null) {
             navigationActivityViewModel.getListaTareas().observe(getViewLifecycleOwner(), listaTareas -> {
-                for (ListElementTarea p : listaTareas) {
-                    listaTarea.add(p);
-                    // Crear notificación para cada elemento agregado
-                    notificarImportanceDefault(p.getTitulo(), p.getImportancia());
-                }
-                // Notificar al adaptador que los datos han cambiado
+                listaTarea.clear(); // Clear the existing list to avoid duplications
+                listaTarea.addAll(listaTareas); // Add all new items
                 listAdapterTarea.notifyDataSetChanged();
+
+                // Obtener la cantidad de elementos en listaTareas
+                int cantidad = listaTareas.size();
+                Log.d("msg-test-cantidadDeTareas", "Cantidad de tareas: " + cantidad);
+                notificarImportanceDefault(cantidad); // Llama a tu método con la cantidad actualizada
             });
         } else {
             // Manejar el caso en el que navigationActivityViewModel es nulo
+            Log.d("msg-test-cantidadDeTareas", "ViewModel es null");
         }
-    }
-
-    public void moveToDescription(ListElementTarea item) {
-        Intent intent = new Intent(getContext(), MainActivity4.class);
-        intent.putExtra("ListElement", item);
-        startActivity(intent);
     }
 
 
@@ -119,7 +128,6 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
         // Elimina el elemento de la lista y notifica al adaptador
         listaTarea.remove(item);
         listAdapterTarea.notifyDataSetChanged();
-        String fileName = "listaTareasJson";
         try (FileOutputStream fileOutputStream = getContext().openFileOutput(fileName, Context.MODE_PRIVATE);
              OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
              BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
@@ -137,38 +145,28 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
         startActivity(intent3);
 
     }
-    public void notificarImportanceDefault(String titulo, String importancia){
+    public void notificarImportanceDefault(Integer candidad){
 
-        String canal1 = titulo +"-"+importancia;
+        String canal1 = "tareaspendientes";
         crearCanalesNotificacion(canal1);
-        //Crear notificación
-        //Agregar información a la notificación que luego sea enviada a la actividad que se abre
+
         Intent intent = new Intent(getContext(), MainActivity2.class);
         intent.putExtra("pid",4616);
         PendingIntent pendingIntent = PendingIntent.getActivity(getContext(), 0, intent, PendingIntent.FLAG_IMMUTABLE);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext(), canal1)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(requireContext(), canal1)
                 .setSmallIcon(R.drawable.ic_notification_outline_black)
-                .setContentTitle("Nueva tarea")
-                .setContentText("Título: " + titulo + "\nPrioridad: " + importancia)
+                .setContentTitle("Tareas Pendientes")
+                .setContentText(candidad+" tareas en curso")
                 .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
-
-        if (importancia.equals("Alta")) {
-            builder.setPriority(NotificationCompat.PRIORITY_HIGH);
-        } else if (importancia.equals("Media")) {
-            builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        } else if (importancia.equals("Baja")) {
-            builder.setPriority(NotificationCompat.PRIORITY_LOW);
-        } else {
-            builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-        }
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
 
         Notification notification = builder.build();
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getContext());
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(requireContext());
 
-        if (ActivityCompat.checkSelfPermission(getContext(), POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-            notificationManager.notify(1, notification);
+        if (ActivityCompat.checkSelfPermission(requireContext(), POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            notificationManager.notify(2, notification);
         }
 
     }
