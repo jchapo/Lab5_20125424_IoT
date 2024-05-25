@@ -25,7 +25,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.lab5_20125424_iot.entity.Tarea;
@@ -34,15 +33,12 @@ import com.example.lab5_20125424_iot.items.ListElementTarea;
 import com.example.lab5_20125424_iot.viewModels.NavigationActivityViewModel;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
-import com.google.android.material.textfield.TextInputLayout;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -66,6 +62,7 @@ public class MainActivity3 extends AppCompatActivity {
     private boolean isEditing = false; // Indicador para editar o crear nuevo usuario
 
     String[] importanciaOptions = {"Alta", "Media", "Baja"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,7 +114,7 @@ public class MainActivity3 extends AppCompatActivity {
                     String fechaCreacion = fechaActual.format(formatter);
 
                     ListElementTarea listElement = new ListElementTarea(titulo, descripcion, fecha, hora, importancia, status, fechaCreacion);
-                    actualizarArchivoTextoJson(this, listElement);
+                    actualizarArchivoTextoJson(this, listElement, isEditing);
                     String toastMessage = "Tarea creada";
                     Toast.makeText(MainActivity3.this, toastMessage, Toast.LENGTH_SHORT).show();
                     Intent intent2 = new Intent(MainActivity3.this, MainActivity2.class);
@@ -135,17 +132,12 @@ public class MainActivity3 extends AppCompatActivity {
                     String hora = editHora.getText().toString();
                     String importancia = selectImportancia.getText().toString();
                     String status = "Activo";
-                    LocalDate fechaActual = LocalDate.now();
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-                    String fechaCreacion = fechaActual.format(formatter);
 
-                    ListElementTarea element = (ListElementTarea) getIntent().getSerializableExtra("ListElement");
-                    element.setTitulo(titulo);
-                    element.setDescripcion(descripcion);
-                    element.setFecha(fecha);
-                    element.setHora(hora);
-                    element.setImportancia(importancia);
-                    actualizarArchivoTextoJson(this, element);
+                    ListElementTarea originalElement = (ListElementTarea) getIntent().getSerializableExtra("ListElement");
+                    String fechaCreacion = originalElement.getFechaCreacion(); // Obtener la fecha de creación original
+
+                    ListElementTarea listElement = new ListElementTarea(titulo, descripcion, fecha, hora, importancia, status, fechaCreacion);
+                    actualizarArchivoTextoJson(this, listElement, isEditing);
                     String toastMessage = "Tarea actualizada";
                     Toast.makeText(MainActivity3.this, toastMessage, Toast.LENGTH_SHORT).show();
                     Intent intent3 = new Intent(MainActivity3.this, MainActivity2.class);
@@ -231,7 +223,7 @@ public class MainActivity3 extends AppCompatActivity {
                 editHora.getText().toString().isEmpty();
     }
 
-    public void actualizarArchivoTextoJson(Context context, ListElementTarea listElement) {
+    public void actualizarArchivoTextoJson(Context context, ListElementTarea listElement, boolean isEditing) {
         String fileName = "listaTareasJson";
 
         try (FileInputStream fileInputStream = context.openFileInput(fileName);
@@ -251,6 +243,13 @@ public class MainActivity3 extends AppCompatActivity {
             ListElementTarea[] listaTareas = gson.fromJson(jsonData, ListElementTarea[].class);
 
             List<ListElementTarea> nuevaListaTareas = new ArrayList<>(Arrays.asList(listaTareas));
+
+            // Eliminar la tarea original si se está editando
+            if (isEditing) {
+                ListElementTarea originalElement = (ListElementTarea) getIntent().getSerializableExtra("ListElement");
+                nuevaListaTareas.removeIf(t -> t.getFechaCreacion().equals(originalElement.getFechaCreacion()));
+            }
+
             nuevaListaTareas.add(listElement);
 
             try (FileOutputStream fileOutputStream = context.openFileOutput(fileName, Context.MODE_PRIVATE);
@@ -297,6 +296,7 @@ public class MainActivity3 extends AppCompatActivity {
         }
         verificarFechaYHora();
     }
+
     public void crearCanalesNotificacion() {
 
         NotificationChannel channel = new NotificationChannel(canal1,
@@ -319,12 +319,13 @@ public class MainActivity3 extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{POST_NOTIFICATIONS}, 101);
         }
     }
-    public void notificarImportanceDefault(String titulo, String importancia){
+
+    public void notificarImportanceDefault(String titulo, String importancia) {
 
         //Crear notificación
         //Agregar información a la notificación que luego sea enviada a la actividad que se abre
         Intent intent = new Intent(this, MainActivity2.class);
-        intent.putExtra("pid",4616);
+        intent.putExtra("pid", 4616);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, canal1)
                 .setSmallIcon(R.drawable.ic_notification_outline_black)
@@ -350,7 +351,5 @@ public class MainActivity3 extends AppCompatActivity {
         if (ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
             notificationManager.notify(1, notification);
         }
-
     }
-
 }
