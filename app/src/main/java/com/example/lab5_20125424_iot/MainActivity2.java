@@ -104,22 +104,15 @@ public class MainActivity2 extends AppCompatActivity {
             e.printStackTrace();
 
             // Aquí se crea una nueva lista vacía de tareas
-            List<ListElementTarea> listaTareas2 = new ArrayList<>();
+            StringBuilder jsonDataBuilder = new StringBuilder();
+            String jsonData = jsonDataBuilder.toString();
 
             // Se convierte la lista vacía a JSON
             Gson gson = new Gson();
-            String nuevaJsonData = gson.toJson(listaTareas2.toArray(new ListElementTarea[0]));
+            ListElementTarea[] listaTareasArray = gson.fromJson(jsonData, ListElementTarea[].class);
 
-            // Se guarda la lista vacía en el archivo
-            try (FileOutputStream fileOutputStream = this.openFileOutput(fileName, Context.MODE_PRIVATE);
-                 OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-                 BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
-                bufferedWriter.write(nuevaJsonData);
-                Log.d("msg-test-crearArchivoTextoComoJson", "Archivo creado correctamente");
-            } catch (IOException ex) {
-                Log.d("msg-test-crearArchivoTextoComoJson", "Error al crear el archivo");
-                ex.printStackTrace();
-            }
+            // Convierte el array en una lista y la asigna a la variable local
+            listaTareas.addAll(Arrays.asList(listaTareasArray));
         }
 
         navigationActivityViewModel.getListaTareas().setValue(new ArrayList<>(listaTareas));
