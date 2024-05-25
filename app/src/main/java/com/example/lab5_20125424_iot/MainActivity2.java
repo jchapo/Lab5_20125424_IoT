@@ -61,14 +61,7 @@ public class MainActivity2 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
         navigationActivityViewModel = new ViewModelProvider(this).get(NavigationActivityViewModel.class);
-        navigationActivityViewModel.getNombreUsuario().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String nombreUsuario) {
-                if (nombreUsuario != null) {
-                    fileName = nombreUsuario + "_listaTareasJson";
-                }
-            }
-        });
+
 
         FloatingActionButton agregarUsuarioButton = findViewById(R.id.agregarTarea);
         agregarUsuarioButton.setOnClickListener(new View.OnClickListener() {
@@ -80,7 +73,7 @@ public class MainActivity2 extends AppCompatActivity {
             }
         });
         List<ListElementTarea> listaTareas = new ArrayList<>();
-
+        String fileName = "listaTareasJson";
         try (FileInputStream fileInputStream = this.openFileInput(fileName);
              InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
              BufferedReader bufferedReader = new BufferedReader(inputStreamReader)) {
@@ -109,10 +102,9 @@ public class MainActivity2 extends AppCompatActivity {
 
             // Se convierte la lista vacía a JSON
             Gson gson = new Gson();
-            ListElementTarea[] listaTareasArray = gson.fromJson(jsonData, ListElementTarea[].class);
 
             // Convierte el array en una lista y la asigna a la variable local
-            listaTareas.addAll(Arrays.asList(listaTareasArray));
+            ListElementTarea[] listaTareasArray = new ListElementTarea[0];
         }
 
         navigationActivityViewModel.getListaTareas().setValue(new ArrayList<>(listaTareas));

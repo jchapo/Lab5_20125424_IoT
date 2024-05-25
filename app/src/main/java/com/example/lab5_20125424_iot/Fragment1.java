@@ -56,7 +56,7 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
     private RecyclerView recyclerView;
     NavigationActivityViewModel navigationActivityViewModel;
     String nombreUsuario;
-    String fileName;
+    String fileName = "listaTareasJson";
 
 
     @Override
@@ -65,14 +65,7 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_fragment1, container, false);
         navigationActivityViewModel = new ViewModelProvider(requireActivity()) .get(NavigationActivityViewModel. class);
-        navigationActivityViewModel.getNombreUsuario().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(String nombreUsuario) {
-                if (nombreUsuario != null) {
-                    fileName = nombreUsuario + "_listaTareasJson";
-                }
-            }
-        });
+
         init(view);
 
         ListAdapterTarea adapter = new ListAdapterTarea(listaTarea, getContext(), this);
@@ -128,6 +121,8 @@ public class Fragment1 extends Fragment implements ListAdapterTarea.OnItemClickL
         // Elimina el elemento de la lista y notifica al adaptador
         listaTarea.remove(item);
         listAdapterTarea.notifyDataSetChanged();
+        String fileName = "listaTareasJson";
+
         try (FileOutputStream fileOutputStream = getContext().openFileOutput(fileName, Context.MODE_PRIVATE);
              OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
              BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
